@@ -98,8 +98,10 @@ function buyProduct(product, qty) {
 
             console.log(
                 "\n========================================================================\n" +
-                "DEAR COSTUMER: We are sorry we don't have enough stock \n" +
-                "for the indicated quantity. Please choose again" + "\n========================================================================\n");
+                "DEAR COSTUMER: We are sorry we don't have enough stock for the indicated \n" +
+                "product. Would yo be interested in another product or trying a different \n" + 
+                "quantity of the same one?" + 
+                "\n========================================================================\n");
 
             return start();
 
@@ -155,7 +157,7 @@ function retrieveInvoice(product, qty) {
             "INVOICE: " + 
             "\n------------------------------------------------------------------------\n\n" +
             tbl.toString() + 
-            "\n\n========================================================================\n");
+            "\n========================================================================\n");
 
         connection.end();
 
