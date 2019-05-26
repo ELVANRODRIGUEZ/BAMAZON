@@ -14,6 +14,14 @@ CREATE TABLE products (
     PRIMARY KEY (product_id)
 );
 
+UPDATE products 
+SET stock_quantity = 20
+WHERE product_id = 2;
+
+
+SELECT * FROM products;
+
+
 
 
 

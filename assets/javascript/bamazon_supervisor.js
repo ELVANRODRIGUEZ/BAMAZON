@@ -48,7 +48,7 @@ function start() {
 
                         console.log(
                             "\n========================================================================\n" +
-                            "OK. These are the current departments. \n\n" +
+                            "OK. These are the current departments: \n\n" +
                             tbl.toString() +
                             "\n========================================================================\n");
 
@@ -58,7 +58,86 @@ function start() {
 
             } else {
 
+                var query;
 
+                query = "SELECT ";;
+                query += "departments.department_id, ";
+                query += "departments.department_name, ";
+                query += "departments.department_overHeadCosts, ";
+                query += "SUM(products.product_price * purchases.quantity) AS 'department_total_sales', ";
+                query += "((products.product_price * purchases.quantity) - departments.department_overHeadCosts) ";
+                query += "AS 'department_total_profits' ";
+                query += "FROM departments ";
+                query += "LEFT JOIN products ";
+                query += "ON departments.department_id = products.department_id ";
+                query += "LEFT JOIN purchases ";
+                query += "ON purchases.product_id = products.product_id ";
+                query += "GROUP BY departments.department_id";
+
+                connection.query(query, function (err, data) {
+
+                    if (err) throw err;
+
+                    var tbl = new Table;
+
+                    data.forEach(function (item) {
+
+                        var profit = item.department_total_profits;
+                        var sales = item.department_total_sales;
+
+                        if (!item.department_total_sales) {
+                            sales = 0;
+                        }
+
+                        if (!item.department_total_profits) {
+                            profit = item.department_overHeadCosts * (-1);
+                        }
+
+                        tbl.cell("Department Id:", item.department_id);
+                        tbl.cell("Department Name:", item.department_name);
+                        tbl.cell("Department Overhead Cost:", item.department_overHeadCosts, Table.number(2));
+                        tbl.cell("Department Total Sales:", sales, Table.number(2));
+                        tbl.cell("Department Total Profits:", profit, Table.number(2));
+                        tbl.newRow();
+
+                        // ==========================================================
+                        // This will totalize the 3 columns according with the manual specifications from "easy-table" NPM package.
+                        tbl.total("Department Overhead Cost:", {
+                            printer: Table.aggr.printer('COST TOT: ', currency),
+                            reduce: Table.aggr.total,
+                            init: 0
+                        });
+                        tbl.total("Department Total Sales:", {
+                            printer: Table.aggr.printer('SALES TOT: ', currency),
+                            reduce: Table.aggr.total,
+                            init: 0
+                        });
+                        tbl.total("Department Total Profits:", {
+                            printer: Table.aggr.printer('PROFITS TOT: ', currency),
+                            reduce: Table.aggr.total,
+                            init: 0
+                        });
+                        // ==========================================================
+
+                    });
+
+                    // ==========================================================
+                    // "easy-table" NPM packages definition for "currency" totaling conversion function.
+                    function currency(val, width) {
+                        var str = val.toFixed(2)
+                        return width ? Table.padLeft(str, width) : str
+                    }
+                    // ==========================================================
+
+                    console.log(
+                        "\n========================================================================\n" +
+                        "This is the current profit status for the different departments: \n\n" +
+                        tbl.toString() +
+                        "\n========================================================================\n");
+
+                    connection.end();
+
+                });
 
             }
 
@@ -118,7 +197,7 @@ function addNewDepartment() {
                             "A new =" + departmentName + "= department has been successfully added. \n" +
                             "\n========================================================================\n");
 
-                        connection.end();
+                        start();
                     })
 
             } else {
