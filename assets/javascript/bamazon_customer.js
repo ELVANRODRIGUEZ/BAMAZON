@@ -1,8 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
-var path = require("path");
 var Table = require("easy-table");
-
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -13,11 +11,8 @@ var connection = mysql.createConnection({
 });
 
 var productsArr = [];
-// var selectedProd;
 
 start();
-
-
 
 function start() {
 
