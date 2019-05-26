@@ -3,7 +3,6 @@ var inquirer = require("inquirer");
 var path = require("path");
 var Table = require("easy-table");
 
-
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
@@ -12,64 +11,125 @@ var connection = mysql.createConnection({
     database: "bamazon"
 });
 
-var productsArr = [];
-// var selectedProd;
-
 start();
-
-
 
 function start() {
 
-    connection.query(
-        "SELECT product_id, " +
-        "product_name " +
-        "FROM products " +
-        "ORDER BY product_name",
-        function (err, data) {
+    inquirer.prompt([{
+        type: "input",
+        message: "Please enter your name.",
+        name: "supName"
+    }, ]).then(function (res) {
 
-            if (err) throw err;
+        inquirer.prompt([{
+            type: "list",
+            message: "Hi " + res.supName + ". Please select what you want to do:",
+            choices: ["View Product Sales by Department", "Create New Department"],
+            name: "supChoice"
+        }]).then(function (res) {
 
-            data.forEach(function (value, item) {
+            if (res.supChoice == "Create New Department") {
 
-                productsArr.push(value.product_name + " id:" + value.product_id);
+                connection.query(
+                    "SELECT department_id, department_name FROM departments ORDER BY department_name",
+                    function (err, data) {
 
-            });
+                        if (err) throw err;
+
+                        var tbl = new Table;
+
+                        data.forEach(function (item) {
+
+                            tbl.cell("Department Id:", item.department_id);
+                            tbl.cell("Department Name:", item.department_name);
+                            tbl.newRow();
+
+                        });
+
+                        console.log(
+                            "\n========================================================================\n" +
+                            "OK. These are the current departments. \n\n" +
+                            tbl.toString() +
+                            "\n========================================================================\n");
+
+                        addNewDepartment();
+
+                    });
+
+            } else {
 
 
-            inquirer.prompt([{
-                type: "list",
-                message: "Please choose the product you want to purchase:",
-                choices: productsArr,
-                name: "productToBuy"
-            }, {
-                type: "input",
-                message: "Please type the quantity you want to purchase:",
-                name: "productQuantity"
-            }]).then(function (res) {
 
-                var selectedProd = res.productToBuy;
-                selectedProd = parseInt(selectedProd.slice((selectedProd.indexOf(":") + 1), (selectedProd.length + 1)));
-
-                var selectedQuantity = parseInt(res.productQuantity);
-
-                if (!selectedQuantity || typeof (selectedQuantity) != "number") {
-                    console.log(
-                        "\n========================================================================\n" +
-                        "ERROR: You did not indicate the product quantity. Please try again." +
-                        "\n========================================================================\n")
-                    return start();
-                }
-
-                console.log(
-                    "\n========================================================================\n" +
-                    "You want to by " + selectedQuantity + " of product with id:" + selectedProd + "\n========================================================================\n");
-
-                buyProduct(selectedProd, selectedQuantity);
-
-            });
+            }
 
         });
+
+    });
+
+}
+
+function addNewDepartment() {
+
+    var departmentName;
+    var departmentCost;
+
+    inquirer.prompt([{
+            type: "input",
+            message: "Please enter the name of the new department",
+            name: "depName"
+        },
+        {
+            type: "input",
+            message: "Please enter the overhead cost of the new department",
+            name: "depCost"
+        }
+    ]).then(function (res) {
+
+        if (!res.depName || !res.depCost) return addNewDepartment();
+
+        departmentName = res.depName;
+        departmentCost = res.depCost;
+
+        inquirer.prompt([{
+            type: "list",
+            message: "Are you sure you want to want to add =" + res.depName + "= as new department?",
+            choices: ["Yes", "No"],
+            name: "makeSure"
+        }]).then(function (res) {
+
+            if (res.makeSure == "Yes") {
+
+                var query;
+
+                query = "INSERT INTO departments ";
+                query += "SET ?";
+
+                connection.query(
+                    "INSERT INTO departments SET ?", {
+                        department_name: departmentName,
+                        department_overHeadCosts: departmentCost
+                    },
+                    function (err, data) {
+
+                        if (err) throw err;
+
+                        console.log(
+                            "\n========================================================================\n" +
+                            "A new =" + departmentName + "= department has been successfully added. \n" +
+                            "\n========================================================================\n");
+
+                        connection.end();
+                    })
+
+            } else {
+
+                return start();
+
+            }
+
+        })
+
+    })
 
 }
 
@@ -99,8 +159,8 @@ function buyProduct(product, qty) {
             console.log(
                 "\n========================================================================\n" +
                 "DEAR COSTUMER: We are sorry we don't have enough stock for the indicated \n" +
-                "product. Would yo be interested in another product or trying a different \n" + 
-                "quantity of the same one?" + 
+                "product. Would yo be interested in another product or trying a different \n" +
+                "quantity of the same one?" +
                 "\n========================================================================\n");
 
             return start();
@@ -134,11 +194,11 @@ function retrieveInvoice(product, qty) {
 
         if (err) throw err;
 
-        
+
         var tbl = new Table;
-        
+
         // console.log(data); 
-        
+
         data.forEach(function (item) {
             tbl.cell("Product:", item.product_name);
             tbl.cell("Unit Price:", item.product_price);
@@ -148,15 +208,15 @@ function retrieveInvoice(product, qty) {
             // console.log(item.product_price);
             // console.log(item.purchase_total);
         })
-        
+
         console.log(
             "\n========================================================================\n" +
-            "DEAR COSTUMER: Your product(s) will be sent to you over the next 3 \n" + 
-            "bussines days. We hope to see you back again shortly. It will always \n" + 
-            "be our pleasure to have you! \n\n" + 
-            "INVOICE: " + 
+            "DEAR COSTUMER: Your product(s) will be sent to you over the next 3 \n" +
+            "bussines days. We hope to see you back again shortly. It will always \n" +
+            "be our pleasure to have you! \n\n" +
+            "INVOICE: " +
             "\n------------------------------------------------------------------------\n\n" +
-            tbl.toString() + 
+            tbl.toString() +
             "\n========================================================================\n");
 
         // connection.end();
@@ -178,8 +238,12 @@ function storePurchase(product, qty) {
     query = "INSERT INTO purchases ";
     query += "SET ?";
 
-    connection.query(query, {product_id:product,quantity:qty,purchase_time:time}, function(err, data) {
-        
+    connection.query(query, {
+        product_id: product,
+        quantity: qty,
+        purchase_time: time
+    }, function (err, data) {
+
         if (err) throw err;
 
         connection.end();
