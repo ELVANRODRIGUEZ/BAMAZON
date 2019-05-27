@@ -26,5 +26,5 @@ After requiring name, it allows the following tasks:
 ## Bamazon_customer
 It will showcase all the availabe products. The customer will be able to select any of them and select the quantity to buy after that. If there is enough stock to make the purchase, it will carry on; if there isn't, a message will make the customer know for him/her to either select other product or the same one but input a differente quantity. The customer is limited to make one purchase at a time.
 
-###Notes:
+### Notes:
 All input is validated so it doesn't carry on if is either missing or incorrect data type is input. All tables are shown as tables in the CL using "easy-table" npm package. The sales tables are totalized.

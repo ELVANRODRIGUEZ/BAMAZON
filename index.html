@@ -58,20 +58,77 @@
                     </video>
                     <img id="playPauseIcon" src="assets/images/PlayPausIcon.png">
                 </div>
+                <h4>Description</h4>
                 <p id="projectDescprition" class="genText">
+                    "Bamazon" is node app that simulates a tiny department sotore database operation. It consists in 3
+                    interfaces to interact with, each one of which is programmed in an individual Javascript file than
+                    keeps a connection with a Mysql database using "mysql" npm package. Those files/interfaces are:
                     <br><br>
                 </p>
                 <ul class="genText">
-                    <li></li>
-                    <li></li>
-                    <li></li>
-                    <li>
-                        
-                    </li>
+                    <li>Bamazon_manager</li>
+                    <li>Bamazon_supervisor</li>
+                    <li>Bamazon_customer</li>
                 </ul><br><br>
+                <h4>Bamazon_manager</h4>
                 <p id="projectDescprition" class="genText">
-                    
-                </p><br><br>
+                    After requiring name, it allows the following tasks:
+                    <br><br>
+                </p>
+                <ol class="genText">
+                    <li>
+                        View products the store has for sale in all of its departments.
+                    </li>
+                    <li>
+                        View the same products but with a "low inventory" filter that is asked for input.
+                    </li>
+                    <li>
+                        Add more stock for the any of the products in the store.
+                    </li>
+                    <li>
+                        Add new products for which the manager will have to specify name, price, correspondant
+                        department and initial stock.
+                    </li>
+                    <li>
+                        Reset store to its original state kept in the included .csv files. All purchases will be
+                        deleted and a set of initial departments and products will be added. All tables will be
+                        droped and recreated.
+                    </li>
+                </ol><br><br>
+                <h4>Bamazon_supervisor</h4>
+                <p id="projectDescprition" class="genText">
+                    After requiring name, it allows the following tasks:
+                    <br><br>
+                </p>
+                <ol class="genText">
+                    <li>
+                        View sales by department and comparing them with its internal costs to indicated the profits
+                        according to the purchases.
+                    </li>
+                    <li>
+                        Create new departmens for which the supervisor will have to indicate the name and overhead
+                        costs.
+                    </li>
+                    <li>
+                        View sales by product.
+                    </li>
+                </ol><br><br>
+                <h4>Bamazon_customer</h4>
+                <p id="projectDescprition" class="genText">
+                    It will showcase all the availabe products. The customer will be able to select any of them
+                    and select the quantity to buy after that. If there is enough stock to make the purchase, it
+                    will carry on; if there isn't, a message will make the customer know for him/her to either
+                    select other product or the same one but input a differente quantity. The customer is
+                    limited to make one purchase at a time.
+                    <br><br>
+                </p>
+                <h5>Notes:</h5>
+                <p id="projectDescprition" class="genText">
+                    All input is validated so it doesn't carry on if is either missing or incorrect data type is
+                    input. All tables are shown as tables in the CL using "easy-table" npm package. The sales
+                    tables are totalized.
+                    <br><br>
+                </p>
                 <p class="genText">
                     You can take a look at the project repo at: <a id="siteRepo" class="links"
                         href="https://github.com/ELVANRODRIGUEZ/BAMAZON" target="_blank">BAMAZON_repo.</a>
