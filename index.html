@@ -6,8 +6,6 @@
     <meta charset="UTF-8">
     <title>BAMAZON</title>
 
-
-
     <!-- Link to BOOTSTRAP stylesheet. -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -35,15 +33,6 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
         integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
-    <!-- Firebase Reference -->
-    <!-- <script src="https://www.gstatic.com/firebasejs/5.9.4/firebase.js"></script> -->
-
-    <!-- Moment.js Reference -->
-    <script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
-
-    <!-- Numberal.js Reference -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
-
 </head>
 
 <body>
@@ -54,7 +43,7 @@
                 <h3 id="projectName">BAMAZON</h3>
                 <div id="videoContainer">
                     <video class="videos" id="shownVideo">
-                        <source id="videoSource" src="assets/videos/" type="video/mp4">
+                        <source id="videoSource" src="assets/videos/Bamazon.mp4" type="video/mp4">
                     </video>
                     <img id="playPauseIcon" src="assets/images/PlayPausIcon.png">
                 </div>
@@ -138,8 +127,48 @@
         </div>
     </div>
 
-    <!-- Personalized Javacript file -->
-    <script src="assets/javascript/javascript.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            // ==================================== VIDEO CONTROL
+
+            var $videoControl = $("#shownVideo").get(0);
+            var $playIcon = $("#playPauseIcon");
+            var playIconToggler = true;
+
+            if ($videoControl) {
+                $videoControl.loop = true;
+            }
+
+            $playIcon.on("click", function () {
+                if (playIconToggler) {
+                    playVideo();
+
+                }
+            })
+
+            $("#shownVideo").on("click", function () {
+                if (playIconToggler) {
+                    playVideo();
+                } else {
+                    pauseVideo();
+                }
+            })
+
+            function playVideo() {
+                $playIcon.css("visibility", "hidden");
+                $videoControl.play();
+                playIconToggler = false;
+            }
+
+            function pauseVideo() {
+                $playIcon.css("visibility", "visible");
+                $videoControl.pause();
+                playIconToggler = true;
+            }
+
+        });
+    </script>
 
 </body>
 
