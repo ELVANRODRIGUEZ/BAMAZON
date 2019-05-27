@@ -7,28 +7,29 @@ SELECT
 FROM products;
 
 SELECT 
-	department_id,
-    department_name,
-    department_overHeadCosts,
-    SUM(product_price * quantity) AS "tot_prod_purchase"
+	departments.department_id,
+    departments.department_name,
+    departments.department_overHeadCosts,
+    SUM(products.product_price * purchases.quantity) AS "department_total_sales",
+    ((products.product_price * purchases.quantity) - departments.department_overHeadCosts) AS "department_total_profits"
 FROM departments
-LEFT JOIN
+LEFT JOIN products
+ON departments.department_id = products.department_id
+LEFT JOIN purchases
+ON purchases.product_id = products.product_id
+GROUP BY departments.department_id;
 
 SELECT 
-    
-FROM purchases
-LEFT JOIN products
-ON purchases.product_id=products.product_id
-GROUP BY product_name;
+	departments.department_id,
+    departments.department_name,
+    departments.department_overHeadCosts,
+    SUM(products.product_price * purchases.quantity) AS "tot_prod_purchase"
+FROM departments
+JOIN products
+ON departments.department_id = products.department_id
+JOIN purchases
+ON purchases.product_id = products.product_id;
 
-SELECT 
-    SUM(product_price * quantity) AS "tot_prod_purchase"
-FROM purchases
-LEFT JOIN products
-ON purchases.product_id=products.product_id
-GROUP BY product_name;
-
-ON department = department_id;
 
 SELECT 
 	product_id,
