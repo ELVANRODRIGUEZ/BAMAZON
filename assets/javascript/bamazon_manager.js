@@ -2,6 +2,7 @@ var fs = require("fs");
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var path = require("path");
+var Table = require("easy-table");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -38,13 +39,90 @@ function start() {
 
                 case "View Low inventory":
 
-                    veiwLowInventory();
+                    inventoryPrompt();
+
+                    function inventoryPrompt() {
+                        inquirer.prompt([{
+                            type: "input",
+                            message: "Please enter the quantity threshold you want to check inventory below:",
+                            name: "inventory"
+                        }]).then(function (res) {
+
+                            var input = parseInt(Math.floor(res.inventory));
+
+                            if (!input || typeof (input) != "number") {
+
+                                console.log("Incorrect input data!");
+
+                                return inventoryPrompt();
+
+                            }
+
+                            veiwLowInventory(input);
+
+                        })
+                    }
 
                     break;
 
                 case "Add to Inventory":
 
-                    addInventory();
+                    var productArr = [];
+
+                    selectProduct();
+
+                    function selectProduct() {
+
+                        connection.query(
+                            "SELECT product_id, product_name " +
+                            "FROM products " +
+                            "ORDER BY product_name",
+                            function (err, res) {
+
+                                if (err) throw err;
+                                res.forEach(function (item) {
+
+                                    productArr.push(item.product_name + " id:" + item.product_id);
+
+                                })
+
+                                inquirer.prompt([{
+                                        type: "list",
+                                        message: "Please select the product you want to add stock for:",
+                                        choices: productArr,
+                                        name: "product"
+                                    },
+                                    {
+                                        type: "input",
+                                        message: "Please input the stock amount you want to add:",
+                                        name: "stock"
+                                    }
+                                ]).then(function (res) {
+
+                                    var stock = parseInt(res.stock);
+
+                                    if (!stock || typeof (stock) != "number") {
+
+                                        return selectProduct();
+
+                                    } else {
+
+                                        var product = res.product;
+                                        var productName = res.product;
+
+                                        product = parseInt(product.slice((product.indexOf(":") + 1), (product.length + 1)));
+
+                                        productName = productName.slice(0, (productName.indexOf(":") - 3));
+
+                                        addInventory(productName, product, stock);
+
+                                    }
+
+                                })
+
+                            });
+
+                    }
 
                     break;
 
@@ -262,4 +340,128 @@ function resetAll() {
 
     }
 
+}
+
+function viewProducts() {
+
+    connection.query(
+        "SELECT products.product_id," +
+        "products.product_name," +
+        "departments.department_name," +
+        "products.product_price," +
+        "products.stock_quantity " +
+        "FROM products " +
+        "JOIN departments " +
+        "ON products.department_id = departments.department_id " +
+        "ORDER BY products.product_name",
+        function (err, res) {
+
+            if (err) throw err;
+
+            var tbl = new Table;
+
+            res.forEach(function (item) {
+
+                tbl.cell("Product ID: ", item.product_id);
+                tbl.cell("Product Name: ", item.product_name);
+                tbl.cell("Department Name: ", item.department_name);
+                tbl.cell("Product Price: ", item.product_price, Table.number(2));
+                tbl.cell("Product Stock: ", item.stock_quantity, Table.number(2));
+                tbl.newRow();
+            });
+
+            console.log(
+                "\n========================================================================\n" +
+                "This is the list of the current selling products in store: \n\n" +
+                tbl.toString() +
+                "\n========================================================================\n");
+
+            connection.end();
+
+        })
+
+}
+
+function veiwLowInventory(qty) {
+    connection.query(
+        "SELECT products.product_id," +
+        "products.product_name," +
+        "departments.department_name," +
+        "products.product_price," +
+        "products.stock_quantity " +
+        "FROM products " +
+        "JOIN departments " +
+        "ON products.department_id = departments.department_id " +
+        "WHERE products.stock_quantity < ? " +
+        "ORDER BY products.product_name",
+        [qty],
+        function (err, res) {
+
+            if (err) throw err;
+
+            if (res.length == 0) {
+
+                console.log(
+                    "\n========================================================================\n" +
+                    "There are not any products which stock is lower than the indicated value. \n" +
+                    "\n========================================================================\n");
+
+                connection.end();
+
+            } else {
+
+                var tbl = new Table;
+
+                res.forEach(function (item) {
+
+                    tbl.cell("Product ID: ", item.product_id);
+                    tbl.cell("Product Name: ", item.product_name);
+                    tbl.cell("Department Name: ", item.department_name);
+                    tbl.cell("Product Price: ", item.product_price, Table.number(2));
+                    tbl.cell("Product Stock: ", item.stock_quantity, Table.number(2));
+                    tbl.newRow();
+                });
+
+                console.log(
+                    "\n========================================================================\n" +
+                    "This is the list of the products with a stock lower than the \n" +
+                    "indicated value: \n\n" +
+                    tbl.toString() +
+                    "\n========================================================================\n");
+
+                connection.end();
+
+            }
+
+        })
+
+}
+
+function addInventory(name, id, qty) {
+
+    connection.query(
+        "UPDATE products " +
+        "SET ? + stock_quantity " +
+        "WHERE ?",
+        [{
+                stock_quantity: qty
+            },
+            {
+                product_id: id
+            }
+        ],
+        function (err, res) {
+
+            if (err) throw err;
+
+            console.log(
+                "\n========================================================================\n" +
+                qty + " units successfully added to -" + name + "- stock. \n" +
+                "\n========================================================================\n");
+
+            connection.end();
+        }
+
+    )
+    
 }
