@@ -93,15 +93,15 @@ function start() {
                                         name: "product"
                                     },
                                     {
-                                        type: "input",
+                                        type: "number",
                                         message: "Please input the stock amount you want to add:",
-                                        name: "stock"
+                                        name: "stock",
                                     }
                                 ]).then(function (res) {
 
                                     var stock = parseInt(res.stock);
 
-                                    if (!stock || typeof (stock) != "number") {
+                                    if (!stock) {
 
                                         return selectProduct();
 
@@ -128,7 +128,92 @@ function start() {
 
                 case "Add New Product":
 
-                    addNewProduct();
+                    var departmentArr = [];
+                    var department;
+                    var price;
+                    var stock;
+
+                    inputProduct();
+
+                    function inputProduct() {
+
+                        connection.query(
+                            "SELECT department_id, department_name " +
+                            "FROM departments " +
+                            "ORDER BY department_name",
+                            function (err, res) {
+
+                                if (err) throw err;
+                                res.forEach(function (item) {
+
+                                    departmentArr.push(item.department_name + " id:" + item.department_id);
+
+                                });
+
+                                inquirer.prompt([{
+                                    type: "input",
+                                    message: "Please type the product name you want to add:",
+                                    name: "product"
+                                }, {
+                                    type: "number",
+                                    message: "Please type the product price you want to add:",
+                                    name: "price"
+                                }, {
+                                    type: "number",
+                                    message: "Please type the product stock you want to add:",
+                                    name: "stock"
+                                }, {
+                                    type: "list",
+                                    message: "Please select de department the new product will belong to:",
+                                    choices: departmentArr,
+                                    name: "department"
+                                }]).then(function (res) {
+
+                                    product = res.product;
+                                    price = parseFloat(res.price);
+                                    stock = parseInt(res.stock);
+                                    department = res.department;
+
+                                    if (!price || !stock) {
+
+                                        return inputProduct();
+
+                                    } else {
+
+
+                                        var message = "\nAre you sure you want to add -" + res.product + "- product, \n";
+                                        message += "with a price of -$" + price + "-, \n";
+                                        message += "a stock of -" + stock + "-, \n";
+                                        message += "and add it to the -" + department + "- department?";
+
+                                        inquirer.prompt([{
+                                            type: "confirm",
+                                            message: message,
+                                            name: "assure"
+                                        }]).then(function (res) {
+
+
+                                            if (res.assure) {
+
+                                                department = parseInt(department.slice((department.indexOf(":") + 1), (department.length + 1)));
+
+                                                addNewProduct(product, department, price, stock);
+
+                                            } else {
+
+                                                return inputProduct();
+
+                                            }
+
+                                        })
+
+                                    }
+
+                                });
+
+                            });
+
+                    }
 
                     break;
 
@@ -463,5 +548,30 @@ function addInventory(name, id, qty) {
         }
 
     )
-    
+
+}
+
+function addNewProduct(name, dep, price, stock) {
+
+    connection.query(
+        "INSERT INTO products " +
+        "SET ?", {
+            product_name: name,
+            department_id: dep,
+            product_price: price,
+            stock_quantity: stock
+        },
+        function (err, res) {
+
+            if (err) throw err;
+
+            console.log(
+                "\n========================================================================\n" +
+                "-" + name + "- product successfully added to -products- table. \n" +
+                "\n========================================================================\n");
+
+            connection.end();
+
+        })
+
 }
